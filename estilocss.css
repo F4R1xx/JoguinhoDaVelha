@@ -17,9 +17,27 @@
     font-size: 32px;
     cursor: pointer;
     border: 1px solid #ccc;
+    transition: background-color 0.3s ease;
+}
+
+.cell:hover {
+    background-color: #ddd;
 }
 
 #status {
     text-align: center;
     margin-top: 20px;
+    font-size: 18px;
+}
+
+@media (max-width: 600px) {
+    #game-board {
+        width: 100%;
+        grid-template-columns: repeat(3, 30%);
+        grid-template-rows: repeat(3, 30%);
+    }
+
+    .cell {
+        font-size: 24px;
+    }
 }

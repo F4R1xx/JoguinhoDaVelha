@@ -1,5 +1,4 @@
 let isConnected = false;  // Variável de controle de conexão
-
 const client = new Paho.MQTT.Client("broker.hivemq.com", 8000, "clientId_" + Math.floor(Math.random() * 1000));
 let turn = "X"; // O jogador "X" começa
 let gameBoard = ["", "", "", "", "", "", "", "", ""];
