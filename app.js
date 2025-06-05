@@ -1,10 +1,6 @@
-let isConnected = false;  // Variável de controle de conexão
-const client = new Paho.MQTT.Client("wss://broker.hivemq.com:8000/mqtt", "clientId_" + Math.floor(Math.random() * 1000));
-let turn = "X"; // O jogador "X" começa
-let gameBoard = ["", "", "", "", "", "", "", "", ""];
-let isMyTurn = true;
+let isConnected = false;
+const client = new Paho.MQTT.Client("wss://test.mosquitto.org:8081", "clientId_" + Math.floor(Math.random() * 1000));
 
-// Conectar ao broker MQTT
 client.connect({
     onSuccess: () => {
         console.log("Conectado ao broker MQTT");
@@ -12,7 +8,10 @@ client.connect({
         client.subscribe("jogo-da-velha");
     },
     onFailure: (e) => {
-        console.log("Falha na conexão", e);
+        console.log("Falha na conexão, tentando novamente em 2 segundos...", e);
+        setTimeout(() => {
+            client.connect();  // Tenta reconectar após 2 segundos
+        }, 2000);
     }
 });
 
@@ -20,35 +19,6 @@ client.connect({
 function updateStatus() {
     const status = document.getElementById("status");
     status.innerHTML = `Vez do jogador: ${turn}`;
-}
-
-// Função para verificar vitória
-function checkWinner() {
-    const winningCombinations = [
-        [0, 1, 2],
-        [3, 4, 5],
-        [6, 7, 8],
-        [0, 3, 6],
-        [1, 4, 7],
-        [2, 5, 8],
-        [0, 4, 8],
-        [2, 4, 6]
-    ];
-
-    for (let combo of winningCombinations) {
-        const [a, b, c] = combo;
-        if (gameBoard[a] && gameBoard[a] === gameBoard[b] && gameBoard[a] === gameBoard[c]) {
-            document.getElementById("status").innerHTML = `${turn} venceu!`;
-            return true;
-        }
-    }
-
-    if (!gameBoard.includes("")) {
-        document.getElementById("status").innerHTML = "Empate!";
-        return true;
-    }
-
-    return false;
 }
 
 // Função para jogar
@@ -65,9 +35,7 @@ function playTurn(cell) {
     turn = turn === "X" ? "O" : "X";
     isMyTurn = false;
 
-    // Verificar se a conexão foi estabelecida antes de enviar
     if (isConnected) {
-        // Enviar a jogada via MQTT
         const message = new Paho.MQTT.Message(JSON.stringify({ index: cellIndex, turn }));
         message.destinationName = "jogo-da-velha";
         client.send(message);
@@ -83,15 +51,13 @@ function onMessageArrived(message) {
     const cell = document.querySelector(`[data-cell="${data.index}"]`);
     gameBoard[data.index] = data.turn;
     cell.innerHTML = data.turn;
-    turn = data.turn === "X" ? "O" : "X"; // Troca o turno
+    turn = data.turn === "X" ? "O" : "X";
     isMyTurn = true;
     updateStatus();
 }
 
-// Configuração para receber mensagens
 client.onMessageArrived = onMessageArrived;
 
-// Evento de clique nas células
 document.querySelectorAll('.cell').forEach(cell => {
     cell.addEventListener('click', () => playTurn(cell));
 });
