@@ -1,5 +1,5 @@
 let isConnected = false;
-const client = new Paho.MQTT.Client("wss://test.mosquitto.org:8081", "clientId_" + Math.floor(Math.random() * 1000));
+const client = new Paho.MQTT.Client("wss://test.mosquitto.org:8080", "clientId_" + Math.floor(Math.random() * 1000));
 
 client.connect({
     onSuccess: () => {
